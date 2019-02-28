@@ -163,5 +163,15 @@ fn main() {
 
 #[cfg(not(any(target_os = "macos", target_os = "ios")))]
 fn main() {
-    eprintln!("coreaudio-sys requires macos or ios target");
+    let target = std::env::var("TARGET").unwrap();
+    // If target's operating system is not macos or ios but the build target
+    // is apple's platform (e.g., mac os virtual machine on Linux), use
+    // the fullback raw bindings instead.
+    if target.contains("-apple") {
+        println!("cargo:rustc-link-lib=framework=AudioUnit");
+        println!("cargo:rustc-link-lib=framework=CoreAudio");
+        println!("cargo:rustc-cfg=fullback_bindings");
+    } else {
+        eprintln!("{} is not a valid target for coreaudio-sys.", target);
+    }
 }
