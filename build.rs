@@ -79,8 +79,8 @@ fn build(frameworks_path: &str) {
     use std::env;
     use std::path::PathBuf;
 
-    let mut frameworks = vec![];
-    let mut headers = vec![];
+    let mut frameworks = Vec::<&str>::new();
+    let mut headers = Vec::<&str>::new();
 
     #[cfg(feature = "audio_toolbox")]
     {
@@ -152,7 +152,10 @@ fn build(frameworks_path: &str) {
         .expect("could not write bindings");
 }
 
-#[cfg(any(target_os = "macos", target_os = "ios"))]
+#[cfg(all(
+    not(feature = "nobindgen"),
+    any(target_os = "macos", target_os = "ios")
+))]
 fn main() {
     if let Ok(directory) = frameworks_path() {
         build(&directory);
@@ -161,7 +164,10 @@ fn main() {
     }
 }
 
-#[cfg(not(any(target_os = "macos", target_os = "ios")))]
+#[cfg(any(
+    feature = "nobindgen",
+    not(any(target_os = "macos", target_os = "ios"))
+))]
 fn main() {
     let target = std::env::var("TARGET").unwrap();
     // If target's operating system is not macos or ios but the build target
